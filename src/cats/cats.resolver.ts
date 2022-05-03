@@ -1,33 +1,43 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { Cat, CreateCatInput } from 'src/graphql.schema';
+import { Resolver, Query, Mutation, Args, ResolveProperty, ResolveField } from '@nestjs/graphql';
+import { Cat, CatResponse, CatResponse_Failure, CatResponse_Success, CreateCatInput } from 'src/graphql.schema';
+import { Roles } from 'src/roles.decorator';
+import { CatsLoader } from './cats.loader';
 import { CatsService } from './cats.service';
+import { Loader } from '@tracworx/nestjs-dataloader';
+import * as DataLoader from 'dataloader' 
+import { BaseResolver } from 'src/framework/base.resolver';
 
-@Resolver('Cat')
-export class CatsResolver {
-  constructor(private readonly catsService: CatsService) {}
+@Resolver('CatResponse')
+export class CatsResolver extends BaseResolver {
+  constructor(private readonly catsService: CatsService) {
+    super();
+  }
 
   @Mutation('createCat')
-  create(@Args('createCatInput') createCatInput: CreateCatInput) {
-    return this.catsService.create(createCatInput);
+  async create(@Args('createCatInput') createCatInput: CreateCatInput): Promise<CatResponse> {
+    let catResponse: CatResponse;
+    try {
+      const cat = await this.catsService.create(createCatInput);
+      catResponse = new CatResponse_Success();
+      catResponse.cat = cat;
+    }
+    catch (error) {
+      catResponse = new CatResponse_Failure();
+      catResponse.error = error.message
+    }
+    return catResponse; 
   }
 
-  /*@Query('cats')
-  findAll() {
-    return this.catsService.findAll();
-  }*/
+  @Query('cats')
+  async findAll(@Args('_id') id: ArrayLike<string[]>, @Loader(CatsLoader) catsLoader: DataLoader<string[], Cat, string[]>) {
+    return catsLoader.loadMany(id);
+  }
 
   @Query('cat')
-  findOne(@Args('id') id: string):Promise<Cat> {
+  @Roles('admin')
+  //@Sanitize
+  findOne(@Args('_id') id: string):Promise<Cat> {
     return this.catsService.findOne(id);
   }
-/*
-  @Mutation('updateCat')
-  update(@Args('updateCatInput') updateCatInput: UpdateCatInput) {
-    return this.catsService.update(updateCatInput.id, updateCatInput);
-  }
 
-  @Mutation('removeCat')
-  remove(@Args('id') id: number) {
-    return this.catsService.remove(id);
-  }*/
 }

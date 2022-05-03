@@ -6,8 +6,9 @@ import { CatsModule } from './cats/cats.module';
 import { ArangoDbModule } from './arango-db/arango-db.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ArangoDbConfig } from './arango-db/arango-db.config.interface';
-
-
+import { constraintDirective, constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
@@ -16,8 +17,12 @@ import { ArangoDbConfig } from './arango-db/arango-db.config.interface';
       typePaths: ['./**/*.graphql'],
       definitions: {
         path: join(process.cwd(), 'src/graphql.schema.ts'),
-        outputAs: 'interface',
+        outputAs: 'class',
+        customScalarTypeMapping: {
+          age_Int_NotNull_min_0_max_20: 'number'
+        }
       },
+      transformSchema: constraintDirective(),
     }),
     CatsModule,
     ArangoDbModule,
@@ -34,6 +39,11 @@ import { ArangoDbConfig } from './arango-db/arango-db.config.interface';
     }),
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
