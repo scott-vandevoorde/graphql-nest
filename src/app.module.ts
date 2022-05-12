@@ -6,7 +6,7 @@ import { CatsModule } from './cats/cats.module';
 import { ArangoDbModule } from './arango-db/arango-db.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ArangoDbConfig } from './arango-db/arango-db.config.interface';
-import { constraintDirective, constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
+import { constraintDirective } from 'graphql-constraint-directive';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './roles.guard';
 
