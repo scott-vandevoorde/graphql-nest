@@ -16,12 +16,6 @@ export class CatsService {
     return cat.new;
   }
 
-  /*async findAll(keys: readonly string[][]) {
-    console.log("find all called.")
-    const cats = await this.arangoDbService.cats.documents(keys.flat())
-    return cats;
-  }*/
-
   async findAll(keys: readonly string[][], @Loader(CatsLoader) catsLoader: DataLoader<string[], Cat, string[]>) {
     console.log("find all called.")
     const cats = await this.arangoDbService.cats.documents(keys.flat())
@@ -32,11 +26,4 @@ export class CatsService {
     return this.arangoDbService.cats.document(id);
   }
 
-  /*update(id: number, updateCatInput: UpdateCatInput) {
-    return `This action updates a #${id} cat`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} cat`;
-  }*/
 }

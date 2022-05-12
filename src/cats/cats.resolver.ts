@@ -35,7 +35,6 @@ export class CatsResolver extends BaseResolver {
 
   @Query('cat')
   @Roles('admin')
-  //@Sanitize
   findOne(@Args('_id') id: string):Promise<Cat> {
     return this.catsService.findOne(id);
   }
